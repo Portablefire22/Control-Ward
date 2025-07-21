@@ -144,11 +144,11 @@ async function searchStreamers(streamerNames) {
     for (let stream of json.data) {
         // We don't want to notify constantly so let's check if we have already notified for this stream
         let streamCheck = monitoredStreams[stream.user_login];
+        live[stream.user_login] = 1; // We just need any filler data here
         if (streamCheck && streamCheck == stream.id) {
             continue;
         }
         streams.push(stream);
-        live[stream.user_login] = 1; // We just need any filler data here
         monitoredStreams[stream.user_login] = stream.id;
     }
     return streams;
