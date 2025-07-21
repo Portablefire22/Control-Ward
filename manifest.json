@@ -20,12 +20,6 @@
     "storage",
     "notifications"
   ],
-  "content_scripts": [
-    {
-      "matches": ["*://*.twitch.tv/*"],
-      "js": ["control-ward.js"]
-    }
-  ],
   "background": {
     "scripts": ["control-background.js"],
     "persistent": true,
@@ -36,6 +30,6 @@
       "48": "icons/border-48.png"
     },
     "default_title": "Hello?",
-    "default_popup": "popup/hello.html"
+    "default_popup": "popup/menu.html"
   }
 }

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+<div id="popup-content">
+    <form>
+        <label for="streamerName">Streamer Name</label>
+        <input type="text" id="streamerName" name="streamerName"/>
+        <button type="submit">Start Tracking</button>
+    </form>
+    <div class="streamer-list">
+        <p>Tracked Streamers:</p>
+        <ul id="streamerList" onloadstart="getTracked()">
+
+        </ul>
+    </div>
+</div>
+<script src="./popup.js"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-const clientId = "kgl6x6l9jun0frygndc06y0vqrofy6";
+const clientId = "kgl6x6l9jun0frygndc06y0vqrofy6"; // These are public and could be taken via a debugger anyway
 const redirectUri = browser.identity.getRedirectURL();
 
 const extensionName = "Control Ward";
@@ -17,18 +17,27 @@ function log(string) {
 }
 
 async function getToken() {
+    let res = await loadTwitch();
+    if (res && twitch.token.length > 0) return twitch.token; 
+    log(`Getting token via Oauth`);
+    return await auth();
+}
+
+async function loadTwitch() {
     let storageResult = await browser.storage.sync.get("twitch");
     if (storageResult != null && storageResult.twitch) {
         let res = storageResult.twitch;
-        if (res != null && res.token.length > 0) {
-            twitch.isActive = true;
-            twitch.token = res.token;
-            log(`Found token in storage`);
-            return twitch.token;
+        if (res != null) { 
+            if (res.token.length > 0) {
+                twitch.isActive = true;
+                twitch.token = res.token;
+                log(`Found token in storage`);
+            } 
+            twitch.streamers = res.streamers;       
+            console.log(res.streamers);
         }
     } 
-    log(`Getting token via Oauth`);
-    return await auth();
+    return twitch.token;
 }
 
 function extractToken(redirect) {
@@ -42,7 +51,7 @@ function extractToken(redirect) {
 function setToken(token) {
     twitch.isActive = true;
     twitch.token = token;
-    browser.storage.sync.set({"twitch": twitch});
+    saveTwitch();
 }
 
 async function auth() {
@@ -85,7 +94,7 @@ function notify(stream) {
     // Incase of some weird memory consumption, lets just delete the notifications if they haven't been clicked for a minute. 
     setTimeout(() => {
         // I'm going to assume that Javascript just handles this perfectly
-        delete notifications[notificationId];
+        if (!notifications[id]) delete notifications[id];
     }, 60000);
 }
 
@@ -151,12 +160,44 @@ async function startup() {
     } 
 }
 
-browser.runtime.onMessage.addListener(async () => {
-    if (twitch.isActive) {
-        log("Already monitoring");
-        return;
+function saveTwitch() {
+    browser.storage.sync.set({"twitch": twitch});
+}
+
+function addStreamer(name) {
+    if (name.length == 0) return;  
+    twitch.streamers.push(name);
+    saveTwitch();
+}
+
+function removeStreamer(name) {
+    if (name.length == 0) return;  
+    twitch.streamers = twitch.streamers.filter((streamer) => streamer != name);
+    saveTwitch();
+}
+
+browser.runtime.onMessage.addListener(async (message) => {
+    console.log(message.message);
+    switch (message.message) {
+        case "startMonitoring":
+            if (twitch.isActive) {
+                log("Already monitoring");
+                return;
+            }
+            await startup();
+            return Promise.resolve();
+            break;
+        case "getTrackedStreamers":
+            return Promise.resolve({streamers: twitch.streamers});
+        case "addTrackedStreamer":
+            addStreamer(message.name);
+            return Promise.resolve();
+        case "removeTrackedStreamer":
+            removeStreamer(message.name);
+            return Promise.resolve();
+        default:
+            log(`Unknown command '${message.message}'`);
     }
-    await startup();
 });
 
 
@@ -166,3 +207,5 @@ browser.runtime.onMessage.addListener(async () => {
 browser.runtime.onStartup.addListener(async () => {
     await startup();
 });
+
+browser.runtime.on
