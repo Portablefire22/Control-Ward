@@ -11,5 +11,5 @@ towards web development - JavaScript in particular - and has proven to me that o
 
 ## Why "Control Ward"
 
-League of Legends reference. I made this because I got annoyed at missing Ratirl streams and so I picked the name of
+League of Legends reference. I made this because I got annoyed at missing Ratirl streams, so I picked the name of
 an item that reveals hidden entities around it.
