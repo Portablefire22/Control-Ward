@@ -11,6 +11,7 @@ const twitch = {
 
 const monitoredStreams = {};
 const notifications = {};
+let live = {};
 
 function log(string) {
     console.log(`[${extensionName}] ${string}`);
@@ -136,6 +137,9 @@ async function searchStreamers(streamerNames) {
     const json = await resp.json();
     if (!json.data || json.data.length == 0) return null;
     let streams = [];
+
+    live = {};
+
     // Iterate through all streams we got
     for (let stream of json.data) {
         // We don't want to notify constantly so let's check if we have already notified for this stream
@@ -144,6 +148,7 @@ async function searchStreamers(streamerNames) {
             continue;
         }
         streams.push(stream);
+        live[stream.user_login] = 1; // We just need any filler data here
         monitoredStreams[stream.user_login] = stream.id;
     }
     return streams;
@@ -176,6 +181,17 @@ function removeStreamer(name) {
     saveTwitch();
 }
 
+function getStreamers() {
+    const streamers = [];
+    for (const streamer of twitch.streamers) {
+        streamers.push({
+            name: streamer,
+            isLive: (live[streamer] != null),
+        })
+    }
+    return streamers;
+}
+
 browser.runtime.onMessage.addListener(async (message) => {
     console.log(message.message);
     switch (message.message) {
@@ -188,7 +204,7 @@ browser.runtime.onMessage.addListener(async (message) => {
             return Promise.resolve();
             break;
         case "getTrackedStreamers":
-            return Promise.resolve({streamers: twitch.streamers});
+            return Promise.resolve({streamers: getStreamers()});
         case "addTrackedStreamer":
             addStreamer(message.name);
             return Promise.resolve();

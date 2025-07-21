@@ -91,3 +91,7 @@ a {
 a:hover {
     color: var(--text-navbar-arrow-hover);
 }
+
+.live {
+    color: var(--text-navbar-hover);
+}
