@@ -49,8 +49,8 @@ function extractToken(redirect) {
     return auth[0]
 }
 
-function setToken(token) {
-    twitch.isActive = true;
+function setToken(token, active = true) {
+    twitch.isActive = active;
     twitch.token = token;
     saveTwitch();
 }
@@ -133,12 +133,19 @@ async function searchStreamers(streamerNames) {
             "Client-Id": `${clientId}`
         },
     });
-    if (!resp.ok) return null;
+    if (!resp.ok) {
+        if (resp.status === 401) {
+            // User token isn't authorised 
+            setToken("", false);
+            getToken();
+        }
+        return null
+    };
     const json = await resp.json();
+    live = {};
     if (!json.data || json.data.length == 0) return null;
     let streams = [];
 
-    live = {};
 
     // Iterate through all streams we got
     for (let stream of json.data) {
@@ -223,5 +230,3 @@ browser.runtime.onMessage.addListener(async (message) => {
 browser.runtime.onStartup.addListener(async () => {
     await startup();
 });
-
-browser.runtime.on
